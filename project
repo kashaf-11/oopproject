@@ -1,0 +1,1142 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.HashMap;
+
+public class Login extends UserBase implements UserOperations {
+    private JFrame frame;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+    private JButton loginButton, registerButton, cancelButton;
+    private JComboBox<String> roleComboBox;
+    private String[] roles = {"Select Role", "Admin", "User"};
+
+    
+    private final Font algerianBoldFont = new Font("Algerian", Font.BOLD, 20);
+
+    public Login() {
+        super(); 
+        initializeComponents();
+    }
+
+    private void initializeComponents() {
+        frame = new JFrame("Login");
+        frame.setSize(600, 700);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new GridBagLayout()); 
+
+        
+        frame.getContentPane().setBackground(new Color(144, 238, 144));
+
+       
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        
+        JLabel roleLabel = new JLabel("Select Role:");
+        roleLabel.setFont(algerianBoldFont);
+        roleComboBox = new JComboBox<>(roles);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        frame.add(roleLabel, gbc);
+
+        gbc.gridx = 1;
+        frame.add(roleComboBox, gbc);
+
+       
+        JLabel usernameLabel = new JLabel("Username:");
+        usernameLabel.setFont(algerianBoldFont);
+        usernameField = new JTextField(19);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        frame.add(usernameLabel, gbc);
+
+        gbc.gridx = 1;
+        frame.add(usernameField, gbc);
+
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(algerianBoldFont);
+        passwordField = new JPasswordField(19);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        frame.add(passwordLabel, gbc);
+
+        gbc.gridx = 1;
+        frame.add(passwordField, gbc);
+
+      
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setBackground(new Color(144, 238, 144));
+
+        loginButton = new JButton("Login");
+        styleButton(loginButton, Color.GREEN);
+
+        registerButton = new JButton("Register");
+        styleButton(registerButton, Color.BLUE);
+
+        cancelButton = new JButton("Cancel");
+        styleButton(cancelButton, Color.RED);
+
+        buttonPanel.add(loginButton);
+        buttonPanel.add(registerButton);
+        buttonPanel.add(cancelButton);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        frame.add(buttonPanel, gbc);
+
+        
+        loginButton.addActionListener(e -> handleLogin());
+        registerButton.addActionListener(e -> handleRegister());
+        cancelButton.addActionListener(e -> System.exit(0));
+
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    @Override//op
+    public void handleLogin() {
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+        String selectedRole = (String) roleComboBox.getSelectedItem();
+
+        if ("Select Role".equals(selectedRole)) {
+            JOptionPane.showMessageDialog(frame, "Please select a role.");
+            return;
+        }
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Please enter both username and password.");
+            return;
+        }
+
+        if (userDatabase.containsKey(username) && userDatabase.get(username).equals(password)) {
+            JOptionPane.showMessageDialog(frame, "Login successful as " + selectedRole + ".");
+            frame.setVisible(false);
+            new ContactManagerGUI("Admin".equals(selectedRole)).show();
+        } else {
+            JOptionPane.showMessageDialog(frame, "Invalid credentials. Try again.");
+        }
+    }
+
+    @Override
+    public void handleRegister() {
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Please fill in all fields.");
+            return;
+        }
+
+        userDatabase.put(username, password);
+        saveUserDatabase();
+        JOptionPane.showMessageDialog(frame, "Registration successful. You can now log in.");
+    }
+
+    
+    public void showRoleSelection() {
+       
+        frame.setVisible(true);
+    }
+
+    private void styleButton(JButton button, Color background) {
+        button.setFont(algerianBoldFont);
+        button.setBackground(background);
+        button.setForeground(Color.BLACK);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(Login::new);
+    }
+}
+[7:09 pm, 04/12/2024] Anfalll...: import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+
+class Contact {
+    private String name;
+    private String phone;
+    private String email;
+    private String city;
+    private String country;
+
+    public Contact(String name, String phone, String email, String city, String country) {
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.city = city;
+        this.country = country;
+    }
+
+    @Override
+    public String toString() {
+        return "Name: " + name + ", Phone: " + phone + ", Email: " + email +
+                ", City: " + city + ", Country: " + country;
+    }
+
+    
+}
+
+
+class ContactManager {
+    private List<Contact> contacts;
+
+    public ContactManager() {
+        contacts = new ArrayList<>();
+    }
+
+    public void addContact(String name, String phone, String email, String city, String country) {
+        contacts.add(new Contact(name, phone, email, city, country));
+    }
+
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
+    public boolean deleteContact(String name) {
+        return contacts.removeIf(contact -> contact.toString().contains("Name: " + name));
+    }
+
+    public boolean editContact(String name, String phone, String email, String city, String country) {
+        for (int i = 0; i < contacts.size(); i++) {
+            if (contacts.get(i).toString().contains("Name: " + name)) {
+                contacts.set(i, new Contact(name, phone, email, city, country));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void saveContactsToFile(String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (Contact contact : contacts) {
+                writer.write(contact.toString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error saving contacts: " + e.getMessage());
+        }
+    }
+
+    public void loadContactsFromFile(String filePath) {
+        contacts.clear();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(", ");
+                String name = parts[0].split(": ")[1];
+                String phone = parts[1].split(": ")[1];
+                String email = parts[2].split(": ")[1];
+                String city = parts[3].split(": ")[1];
+                String country = parts[4].split(": ")[1];
+                addContact(name, phone, email, city, country);
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error loading contacts: " + e.getMessage());
+        }
+    }
+}
+
+
+public class ContactManagerGUI {
+    private boolean isAdmin;
+    private JFrame frame;
+    private JPanel buttonPanel;
+    private JComboBox<String> roleComboBox;
+    private ContactManager contactManager;
+
+    public ContactManagerGUI(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+        this.contactManager = new ContactManager();
+
+        
+        frame = new JFrame(isAdmin ? "Admin Contact Manager" : "User Contact Manager");
+        frame.setSize(600, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+       
+        JLabel titleLabel = new JLabel("Contact Management", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        frame.add(titleLabel, BorderLayout.NORTH);
+
+        buttonPanel = new JPanel(new FlowLayout());
+        String[] roles = {"Admin", "User"};
+        roleComboBox = new JComboBox<>(roles);
+
+        roleComboBox.addActionListener(e -> updateGUI(roleComboBox.getSelectedItem().toString()));
+
+        buttonPanel.add(roleComboBox);
+        updateGUI(roleComboBox.getSelectedItem().toString());
+
+        frame.add(buttonPanel, BorderLayout.CENTER);
+        
+        
+        frame.setLocationRelativeTo(null); 
+    }
+
+    private void updateGUI(String role) {
+        buttonPanel.removeAll();
+        buttonPanel.add(roleComboBox);
+
+        if ("Admin".equals(role)) {
+            setupAdminGUI();
+        } else {
+            setupUserGUI();
+        }
+
+        buttonPanel.revalidate();
+        buttonPanel.repaint();
+    }
+
+    private void setupAdminGUI() {
+        
+        buttonPanel.setBackground(Color.PINK);
+
+      
+        JButton deleteButton = new JButton("Delete Contact");
+        JButton editButton = new JButton("Edit Contact");
+        JButton backButton = new JButton("Back");
+
+       
+        deleteButton.setBackground(Color.RED);
+        deleteButton.setForeground(Color.BLACK);
+
+        editButton.setBackground(Color.BLUE);
+        editButton.setForeground(Color.BLACK);
+
+        backButton.setBackground(Color.YELLOW);
+        backButton.setForeground(Color.BLACK);
+
+        // Add action listeners
+        deleteButton.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(frame, "Enter Contact Name to Delete:");
+            if (name != null) {
+                boolean deleted = contactManager.deleteContact(name);
+                JOptionPane.showMessageDialog(frame, deleted ? "Contact deleted." : "Contact not found.");
+            }
+        });
+
+        editButton.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(frame, "Enter Contact Name to Edit:");
+            if (name != null) {
+                String phone = JOptionPane.showInputDialog(frame, "Enter New Phone:");
+                String email = JOptionPane.showInputDialog(frame, "Enter New Email:");
+                String city = JOptionPane.showInputDialog(frame, "Enter New City:");
+                String country = JOptionPane.showInputDialog(frame, "Enter New Country:");
+
+                if (phone != null && email != null && city != null && country != null) {
+                    boolean updated = contactManager.editContact(name, phone, email, city, country);
+                    JOptionPane.showMessageDialog(frame, updated ? "Contact updated." : "Contact not found.");
+                }
+            }
+        });
+
+        backButton.addActionListener(e -> frame.dispose());
+
+        
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(editButton);
+        buttonPanel.add(backButton);
+    }
+
+    private void setupUserGUI() {
+        
+        buttonPanel.setBackground(Color.PINK);
+
+      
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        // Create buttons
+        JButton addButton = new JButton("Add Contact");
+        JButton displayButton = new JButton("Display Contacts");
+        JButton saveButton = new JButton("Save Contacts");
+        JButton loadButton = new JButton("Load Contacts");
+        JButton backButton = new JButton("Back");
+
+        // Customize button colors
+        addButton.setBackground(Color.GREEN);
+        addButton.setForeground(Color.WHITE);
+
+        displayButton.setBackground(Color.BLUE);
+        displayButton.setForeground(Color.WHITE);
+
+        saveButton.setBackground(Color.ORANGE);
+        saveButton.setForeground(Color.BLACK);
+
+        loadButton.setBackground(Color.CYAN);
+        loadButton.setForeground(Color.BLACK);
+
+        backButton.setBackground(Color.RED);
+        backButton.setForeground(Color.WHITE);
+
+        // Add action listeners
+        addButton.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(frame, "Enter Name:");
+            String phone = JOptionPane.showInputDialog(frame, "Enter Phone:");
+            String email = JOptionPane.showInputDialog(frame, "Enter Email:");
+            String city = JOptionPane.showInputDialog(frame, "Enter City:");
+            String country = JOptionPane.showInputDialog(frame, "Enter Country:");
+
+            if (name != null && phone != null && email != null && city != null && country != null) {
+                contactManager.addContact(name, phone, email, city, country);
+                JOptionPane.showMessageDialog(frame, "Contact added successfully!");
+            }
+        });
+
+        displayButton.addActionListener(e -> {
+            List<Contact> contacts = contactManager.getContacts();
+            if (contacts.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "No contacts available.");
+            } else {
+                StringBuilder contactList = new StringBuilder();
+                for (Contact contact : contacts) {
+                    contactList.append(contact).append("\n");
+                }
+                JOptionPane.showMessageDialog(frame, contactList.toString());
+            }
+        });
+
+        saveButton.addActionListener(e -> {
+            contactManager.saveContactsToFile("C:\\AnfalSave\\contacts.txt");
+            JOptionPane.showMessageDialog(frame, "Contacts saved.");
+        });
+
+        loadButton.addActionListener(e -> {
+            contactManager.loadContactsFromFile("C:\\AnfalSave\\contacts.txt");
+            JOptionPane.showMessageDialog(frame, "Contacts loaded.");
+        });
+
+        backButton.addActionListener(e -> frame.dispose());
+
+        
+        buttonPanel.add(addButton);
+        buttonPanel.add(displayButton);
+        buttonPanel.add(saveButton);
+        buttonPanel.add(loadButton);
+        buttonPanel.add(backButton);
+    }
+
+    public void show() {
+        frame.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        boolean isAdmin = JOptionPane.showConfirmDialog(null, "Are you an Admin?", "Role", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+        new ContactManagerGUI(isAdmin).show();
+    }
+}
+[7:09 pm, 04/12/2024] Anfalll...: public abstract class Admin extends User {
+
+    private final String password;
+    private final String username;
+
+   
+    public Admin(String username, String password) {
+        super(username, password);  
+        this.username = username;
+        this.password = password;
+    }
+
+   
+    public void performRoleSpecificAction() {
+        System.out.println("Admin role: Can add, delete, or update contacts, and view all contacts.");
+    }
+
+  
+}
+import java.util.HashMap;
+import javax.swing.JFrame;
+
+
+abstract class User {
+    protected String username;
+
+    public User(String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    
+    public abstract void accessDashboard();
+}
+
+class AdminUser extends User {
+    public AdminUser(String username) {
+        super(username);
+    }
+
+    // overriding
+    public void handleLogin(JFrame frame, HashMap<String, String> userDatabase) {
+       
+        System.out.println("Admin user " + getUsername() + " logged in.");
+        
+    }
+
+    
+    public void accessDashboard() {
+        
+        System.out.println("Opening Admin Dashboard for " + getUsername());
+        
+    }
+}
+import java.io.*;
+
+public class Contact  {
+    private static final long serialVersionUID = 1L; 
+    
+    private String name;
+    private String phone;
+    private String email;
+    private String city;
+    private String country;
+
+ //overload
+    public Contact(String name, String phone, String email, String city, String country) {
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.city = city;
+        this.country = country;
+    }
+
+ 
+    public Contact(String data) {
+        String[] fields = data.split(",");
+        if (fields.length == 5) {
+            this.name = fields[0];
+            this.phone = fields[1];
+            this.email = fields[2];
+            this.city = fields[3];
+            this.country = fields[4];
+        } else {
+            throw new IllegalArgumentException("Invalid contact data format.");
+        }
+    }
+
+    //
+    public String toString() {
+        
+        return name + "," + phone + "," + email + "," + city + "," + country;
+    }
+
+    
+    public String toDisplayString() {
+        return "Name: " + name + 
+               "\nPhone: " + phone + 
+               "\nEmail: " + email + 
+               "\nCity: " + city + 
+               "\nCountry: " + country;
+    }
+
+   
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+   
+    public boolean isValidPhone() {
+        return phone.matches("\\d{10}"); 
+    }
+
+    public boolean isValidEmail() {
+        return email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"); 
+    }
+}
+import java.util.*;
+import java.io.*;
+
+public class FlowerShopMain {
+    private static List<Flower> flowers = new ArrayList<>();
+    private static List<Customer> customers = new ArrayList<>();
+    private static String flowerFilePath = "C:\\Flower.txt";  
+    private static String customerFilePath = "C:\\customers.txt";  // Hardcoded file path for Customer data
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int choice;
+
+        // Loading data from files at the specified locations
+        loadData();
+
+        do {
+            displayMenu();
+            choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1: addFlowerOrCustomer(scanner); break;
+                case 2: updateDetails(scanner); break;
+                case 3: deleteEntity(scanner); break;
+                case 4: displayInventoryOrCustomers(scanner); break;
+                case 5: placeOrder(scanner); break;
+                case 6: saveData(); System.out.println("Exiting..."); break;
+                default: System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 6);
+    }
+
+    private static void displayMenu() {
+        System.out.println("\nWelcome to Flower Shop Management System");
+        System.out.println("1. Add Flower or Customer");
+        System.out.println("2. Update Flower or Customer Details");
+        System.out.println("3. Delete Flower or Customer");
+        System.out.println("4. Display Flowers or Customers");
+        System.out.println("5. Place an Order");
+        System.out.println("6. Exit");
+        System.out.print("Enter your choice: ");
+    }
+
+    private static void loadData() {
+        try {
+            // Loading Flower data from the file path
+            BufferedReader flowerReader = new BufferedReader(new FileReader(flowerFilePath));
+            String line;
+            while ((line = flowerReader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length == 4) {
+                    flowers.add(new Flower(data[0], data[1], Double.parseDouble(data[2]), Integer.parseInt(data[3])));
+                }
+            }
+            flowerReader.close();
+
+            // Loading Customer data from the file path
+            BufferedReader customerReader = new BufferedReader(new FileReader(customerFilePath));
+            while ((line = customerReader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length == 3) {
+                    customers.add(new Customer(data[0], data[1], data[2]));
+                }
+            }
+            customerReader.close();
+
+            System.out.println("Data loaded successfully!");
+        } catch (IOException e) {
+            System.out.println("Error loading data: " + e.getMessage());
+        }
+    }
+
+    private static void saveData() {
+        try {
+            // Save flowers to file
+            BufferedWriter flowerWriter = new BufferedWriter(new FileWriter(flowerFilePath));
+            for (Flower flower : flowers) {
+                flowerWriter.write(flower.getFlowerID() + "," + flower.getName() + "," + flower.getPricePerStem() + "," + flower.getStockQuantity());
+                flowerWriter.newLine();
+            }
+            flowerWriter.close();
+
+            // Save customers to file
+            BufferedWriter customerWriter = new BufferedWriter(new FileWriter(customerFilePath));
+            for (Customer customer : customers) {
+                customerWriter.write(customer.getCustomerID() + "," + customer.getName() + "," + customer.getContactNumber());
+                customerWriter.newLine();
+            }
+            customerWriter.close();
+
+            System.out.println("Data saved successfully!");
+        } catch (IOException e) {
+            System.out.println("Error saving data: " + e.getMessage());
+        }
+    }
+
+    private static void addFlowerOrCustomer(Scanner scanner) {
+        System.out.println("Choose: 1 for Flower, 2 for Customer");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        if (choice == 1) {
+            // Add Flower
+            System.out.print("Enter Flower ID: ");
+            String id = scanner.nextLine();
+            System.out.print("Enter Name: ");
+            String name = scanner.nextLine();
+            System.out.print("Enter Price per Stem: ");
+            double price = scanner.nextDouble();
+            System.out.print("Enter Stock Quantity: ");
+            int quantity = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            System.out.print("Enter Type (1 for Seasonal, 2 for Exotic): ");
+            int type = scanner.nextInt();
+            scanner.nextLine();
+
+            if (type == 1) {
+                System.out.print("Enter Season: ");
+                String season = scanner.nextLine();
+                flowers.add(new SeasonalFlower(id, name, price, quantity, season));
+            } else if (type == 2) {
+                System.out.print("Enter Origin Country: ");
+                String country = scanner.nextLine();
+                flowers.add(new ExoticFlower(id, name, price, quantity, country));
+            } else {
+                System.out.println("Invalid type.");
+            }
+        } else if (choice == 2) {
+            // Add Customer
+            System.out.print("Enter Customer ID: ");
+            String id = scanner.nextLine();
+            System.out.print("Enter Name: ");
+            String name = scanner.nextLine();
+            System.out.print("Enter Contact Number: ");
+            String contact = scanner.nextLine();
+            customers.add(new Customer(id, name, contact));
+        } else {
+            System.out.println("Invalid choice.");
+        }
+    }
+
+    private static void updateDetails(Scanner scanner) {
+        System.out.println("Choose: 1 for Flower, 2 for Customer");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if (choice == 1) {
+            System.out.print("Enter Flower ID to Update: ");
+            String id = scanner.nextLine();
+            for (Flower flower : flowers) {
+                if (flower.getFlowerID().equals(id)) {
+                    System.out.print("Enter New Name: ");
+                    flower.setName(scanner.nextLine());
+                    System.out.print("Enter New Price: ");
+                    flower.setPricePerStem(scanner.nextDouble());
+                    System.out.print("Enter New Stock Quantity: ");
+                    flower.setStockQuantity(scanner.nextInt());
+                    scanner.nextLine(); 
+                    System.out.println("Flower details updated.");
+                    return;
+                }
+            }
+            System.out.println("Flower not found.");
+        } else if (choice == 2) {
+            System.out.print("Enter Customer ID to Update: ");
+            String id = scanner.nextLine();
+            for (Customer customer : customers) {
+                if (customer.getCustomerID().equals(id)) {
+                    System.out.print("Enter New Name: ");
+                    customer.setName(scanner.nextLine());
+                    System.out.print("Enter New Contact Number: ");
+                    customer.setContactNumber(scanner.nextLine());
+                    System.out.println("Customer details updated.");
+                    return;
+                }
+            }
+            System.out.println("Customer not found.");
+        } else {
+            System.out.println("Invalid choice.");
+        }
+    }
+
+    private static void deleteEntity(Scanner scanner) {
+        System.out.println("Choose: 1 for Flower, 2 for Customer");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if (choice == 1) {
+            System.out.print("Enter Flower ID to Delete: ");
+            String id = scanner.nextLine();
+            flowers.removeIf(flower -> flower.getFlowerID().equals(id));
+            System.out.println("Flower deleted.");
+        } else if (choice == 2) {
+            System.out.print("Enter Customer ID to Delete: ");
+            String id = scanner.nextLine();
+            customers.removeIf(customer -> customer.getCustomerID().equals(id));
+            System.out.println("Customer deleted.");
+        } else {
+            System.out.println("Invalid choice.");
+        }
+    }
+
+    private static void displayInventoryOrCustomers(Scanner scanner) {
+        System.out.println("Choose: 1 for Flowers, 2 for Customers");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if (choice == 1) {
+            System.out.println("Flower Inventory:");
+            for (Flower flower : flowers) {
+                flower.displayDetails();
+            }
+        } else if (choice == 2) {
+            System.out.println("Customer List:");
+            for (Customer customer : customers) {
+                customer.displayDetails();
+            }
+        } else {
+            System.out.println("Invalid choice.");
+        }
+    }
+
+    private static void placeOrder(Scanner scanner) {
+        System.out.print("Enter Customer ID: ");
+        String customerId = scanner.nextLine();
+        Customer customer = null;
+        for (Customer c : customers) {
+            if (c.getCustomerID().equals(customerId)) {
+                customer = c;
+                break;
+            }
+        }
+
+        if (customer == null) {
+            System.out.println("Customer not found.");
+            return;
+        }
+
+        System.out.print("Enter Flower ID: ");
+        String flowerId = scanner.nextLine();
+        Flower flower = null;
+        for (Flower f : flowers) {
+            if (f.getFlowerID().equals(flowerId)) {
+                flower = f;
+                break;
+            }
+        }
+
+        if (flower == null) {
+            System.out.println("Flower not found.");
+            return;
+        }
+
+        System.out.print("Enter Quantity: ");
+        int quantity = scanner.nextInt();
+        scanner.nextLine();
+
+        if (quantity > flower.getStockQuantity()) {
+            System.out.println("Insufficient stock.");
+            return;
+        }
+
+        double discount = flower.calculateDiscount(quantity);
+        double totalPrice = (quantity * flower.getPricePerStem()) - discount;
+
+        flower.setStockQuantity(flower.getStockQuantity() - quantity);
+        customer.addOrder(flowerId, quantity, totalPrice);
+
+        System.out.println("Order placed successfully.");
+        System.out.printf("Total Price: %.2f\n", totalPrice);
+    }
+}
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+
+
+class Contact {
+    private String name;
+    private String phone;
+    private String email;
+    private String city;
+    private String country;
+//
+    
+    public Contact(String name, String phone, String email, String city, String country) {
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.city = city;
+        this.country = country;
+    }
+
+    
+    public Contact(String data) {
+        String[] fields = data.split(",");
+        if (fields.length == 5) {
+            this.name = fields[0];
+            this.phone = fields[1];
+            this.email = fields[2];
+            this.city = fields[3];
+            this.country = fields[4];
+        }
+    }
+
+    
+    
+    public String toString() {
+        return name + "," + phone + "," + email + "," + city + "," + country;
+    }
+
+    
+    public String getName() {
+        return name;
+    }
+}
+
+
+public class ContactManager {
+    private List<Contact> contacts;  
+
+   
+    public ContactManager() {
+        this.contacts = new ArrayList<>();
+    }
+
+   
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
+    //overloaded
+    public void addContact(String name, String phone, String email, String city, String country) {
+        contacts.add(new Contact(name, phone, email, city, country));
+    }
+
+    //overload
+    public void addContact(String name, String phone) {
+        String defaultEmail = "anfal@gmail.com";
+        String defaultCity = "Okara City";
+        String defaultCountry = "Pakistan Country";
+        contacts.add(new Contact(name, phone, defaultEmail, defaultCity, defaultCountry));
+    }
+
+  
+    public boolean deleteContact(String contactName) {
+        return contacts.removeIf(contact -> contact.getName().equals(contactName));
+    }
+
+  
+    public boolean editContact(String name, String phone, String email, String city, String country) {
+        for (int i = 0; i < contacts.size(); i++) {
+            if (contacts.get(i).getName().equals(name)) {
+                contacts.set(i, new Contact(name, phone, email, city, country));  // Update contact
+                return true;
+            }
+        }
+        return false;
+    }
+//overload
+    public void loadContactsFromFile(String filePath) {
+        try {
+            File directory = new File("C:\\AnfalSave");
+            if (!directory.exists()) {
+                directory.mkdirs();  // Create the directory if it doesn't exist
+            }
+
+            File file = new File(filePath);
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    contacts.add(new Contact(line));  // Add loaded contact
+                }
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //overload
+    public void loadContactsFromFile() {
+        String defaultFilePath = "C:\\AnfalSave\\contacts.txt";
+        loadContactsFromFile(defaultFilePath);  // Call the overloaded method with the default path
+    }
+
+   
+    public void saveContactsToFile(String filePath) {
+        try {
+            File directory = new File("C:\\AnfalSave");
+            if (!directory.exists()) {
+                directory.mkdirs(); 
+            }
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+            for (Contact contact : contacts) {
+                writer.write(contact.toString());  // Write each contact to the file
+                writer.newLine();
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+class Main {
+    public static void main(String[] args) {
+        ContactManager manager = new ContactManager();
+
+      
+        manager.addContact("Anfal", "123-456-7890", "Anfal@gmail.com", "New York", "USA");
+        manager.addContact("Ali", "987-654-3210", "Aliexample.com", "Los Angeles", "USA");
+
+        
+        manager.addContact("James Brown", "555-666-7777");
+
+       
+        System.out.println("Contacts in the system:");
+        for (Contact contact : manager.getContacts()) {
+            System.out.println(contact);
+        }
+
+       
+        String filePath = "C:\\AnfalSave\\contacts.txt";
+        manager.saveContactsToFile(filePath);
+
+        
+        manager.loadContactsFromFile(filePath);
+
+     
+        manager.loadContactsFromFile();
+
+       
+        System.out.println("Contacts after loading from file:");
+        for (Contact contact : manager.getContacts()) {
+            System.out.println(contact);
+        }
+    }
+}
+import javax.swing.*;
+import java.io.*;
+import java.util.HashMap;
+
+abstract class User {
+    protected String username;
+    protected String password;
+
+   
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+  //override
+    public abstract void handleLogin(JFrame frame, HashMap<String, String> userDatabase);
+
+    //overrido
+    public void handleRegister(JFrame frame, HashMap<String, String> userDatabase) {
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Please fill in all fields.");
+            return;
+        }
+
+       
+        userDatabase.put(username, password);
+        saveUserDatabase(userDatabase); 
+
+        
+        JOptionPane.showMessageDialog(frame, "Registration successful.");
+    }
+//l
+    
+    private void saveUserDatabase(HashMap<String, String> userDatabase) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("users.txt"))) {
+            for (String user : userDatabase.keySet()) {
+                bw.write(user + ":" + userDatabase.get(user));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Failed to save user data.");
+        }
+    }
+//
+    public String getUsername() {
+        return username;
+    }
+}
+import javax.swing.*;
+import java.io.*;
+import java.util.HashMap;
+
+abstract class User {
+    protected String username;
+    protected String password;
+
+   
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+  //override
+    public abstract void handleLogin(JFrame frame, HashMap<String, String> userDatabase);
+
+    //overrido
+    public void handleRegister(JFrame frame, HashMap<String, String> userDatabase) {
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Please fill in all fields.");
+            return;
+        }
+
+       
+        userDatabase.put(username, password);
+        saveUserDatabase(userDatabase); 
+
+        
+        JOptionPane.showMessageDialog(frame, "Registration successful.");
+    }
+//l
+    
+    private void saveUserDatabase(HashMap<String, String> userDatabase) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("users.txt"))) {
+            for (String user : userDatabase.keySet()) {
+                bw.write(user + ":" + userDatabase.get(user));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Failed to save user data.");
+        }
+    }
+//
+    public String getUsername() {
+        return username;
+    }
+}
+public interface UserOperations {
+    void handleLogin();
+    void handleRegister();
+    void showRoleSelection();
+}
